@@ -47,7 +47,7 @@ This manifest allows any MCP-compatible AI system to call this server using stru
 1. **Load the Manifest**
 
 ```http
-GET https://mcp.fundmesolana.com/api/mcp.json
+GET https://mcp.fundmesolana.com/mcp.json
 ```
 
 2. **Prompt Example:**
@@ -127,9 +127,89 @@ POST /check_token/
 * Includes approval & threat indicators
 
 ### 4. `check_url`
+The `check_url` endpoint uses a **multi-layered detection strategy** to determine if a website is malicious:
+
+- **GoPlus API** (blockchain-aware threat intelligence)
+- **Google Safe Browsing API v4**
+- Fallback to **community feeds**:
+  - [OpenPhish](https://openphish.com/feed.txt)
+  - [URLHaus](https://urlhaus.abuse.ch/downloads/text/)
+  - [PhishTank](http://data.phishtank.com/data/online-valid.xml)
+
+This layered approach increases reliability when Chrome or browsers detect threats not yet indexed by APIs.
 
 ```json
-{ "url": "http://uniswap-swap.com" }
+{ "url": "https://mintyspark.vercel.app/managermentquan/vJ4q7Zb8P1.html" }
+```
+```json
+{
+  "url": "https://noblepci.com/innovation"
+}
+```
+
+
+
+### Real Threat Detection Examples 
+
+#### Example 1: Detected by **Google Safe Browsing**
+
+```json
+{
+  "url": "https://noblepci.com/innovation"
+}
+````
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_phishing": 1,
+    "raw": {
+      "source": "google",
+      "phishing": 1,
+      "raw": {
+        "matches": [
+          {
+            "threatType": "SOCIAL_ENGINEERING",
+            "platformType": "ANY_PLATFORM",
+            "threat": {
+              "url": "https://noblepci.com/innovation"
+            },
+            "cacheDuration": "300s",
+            "threatEntryType": "URL"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+---
+
+#### Example 2: Detected by **OpenPhish**
+
+```json
+{
+  "url": "https://mintyspark.vercel.app/managermentquan/vJ4q7Zb8P1.html"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_phishing": 1,
+    "raw": {
+      "source": "openphish",
+      "phishing": 1
+    }
+  }
+}
 ```
 
 ### 5. `simulate_sol_tx`
@@ -189,10 +269,10 @@ And return:
 }
 ```
 
-### Current Accepted Partner
+### Current Accepted Platform for Donation
 
 * FundMeSolana:
-  [https://fundmesolana.com/api/emergency/verified\_causes](https://fundmesolana.com/api/emergency/verified_causes)
+  [https://fundmesolana.com](https://fundmesolana.com/)
 
 Our server automatically fetches and indexes donation addresses from approved sources like the one above.
 
@@ -200,9 +280,19 @@ Our server automatically fetches and indexes donation addresses from approved so
 
 ## External APIs Used
 
-* [GoPlus Labs API](https://docs.gopluslabs.io/reference/api-overview)
-* [Covalent API](https://www.covalenthq.com/docs/api/)
-* [Solana JSON-RPC](https://docs.solana.com/api/http)
+This MCP Server integrates multiple real-time security and blockchain APIs:
+
+| Provider                 | Purpose                                      |
+|--------------------------|----------------------------------------------|
+| GoPlus Labs              | Scam token, wallet, NFT, and Solana checks   |
+| Google Safe Browsing     | Detect phishing, malware, and social threats |
+| OpenPhish                | Community-driven phishing URL database       |
+| URLHaus                  | Malware distribution URL detection           |
+| PhishTank                | Public phishing site feed                    |
+| Covalent API             | EVM transaction and contract decoding        |
+| Solana JSON-RPC          | Transaction simulation and confirmation      |
+| **FundMeSolana**         | Verified donation addresses (Solana)   |
+
 
 ---
 
@@ -249,10 +339,14 @@ http://127.0.0.1:8000/swagger/
 
 ### API Providers
 
-* [GoPlus Labs API](https://docs.gopluslabs.io/reference/api-overview)
-* [Covalent API](https://www.covalenthq.com/docs/api/)
-* [Solana JSON-RPC](https://docs.solana.com/api/http)
-* [FundMeSolana Verified Causes JSON](https://mcp.fundmesolana.com/api/emergency/verified_causes)
+* [GoPlus Labs API](https://docs.gopluslabs.io/reference/api-overview)  
+* [Covalent API](https://www.covalenthq.com/docs/api/)  
+* [Solana JSON-RPC](https://docs.solana.com/api/http)  
+* [Google Safe Browsing API](https://developers.google.com/safe-browsing/v4)  
+* [OpenPhish Public Feed](https://openphish.com/feed.txt)  
+* [URLHaus Malware Feed](https://urlhaus.abuse.ch/downloads/text/)  
+* [PhishTank XML Feed](http://data.phishtank.com/data/online-valid.xml)  
+* [FundMeSolana Verified Causes JSON](https://fundmesolana.com/api/emergency/verified_causes)  
 ---
 
 ## Built With ❤️ by Bolaji M.L
