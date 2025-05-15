@@ -278,6 +278,15 @@ Our server automatically fetches and indexes donation addresses from approved so
 
 ---
 
+### Currently working on the MCP Tools plugin that can connect to ChatGpt
+
+* Web3 Trust Guard MCP Server GPT Plugin:
+[https://chatgpt.com/g/g-6824df145b30819185f9c12f16959d4a-web3-trust-guard-mcp-server](https://chatgpt.com/g/g-6824df145b30819185f9c12f16959d4a-web3-trust-guard-mcp-server)
+
+Still under testing and iterating.
+
+---
+
 ## External APIs Used
 
 This MCP Server integrates multiple real-time security and blockchain APIs:

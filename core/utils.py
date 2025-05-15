@@ -179,7 +179,7 @@ def get_verified_causes():
 def success_response(data):
     return JsonResponse({"success": True, "data": data})
 
-def error_response(message, code=None, raw=None, status=400):
+def error_response(message, code=None, raw=None, status=200): 
     return JsonResponse({
         "success": False,
         "message": message,

@@ -5,7 +5,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.shortcuts import redirect
-
+from django.views.static import serve
+from django.conf import settings
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -19,6 +20,10 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('', lambda request: redirect('swagger/', permanent=False)),
+
+    path("openapi.json", lambda request: serve(request, "openapi.json", document_root=settings.BASE_DIR / "static")),
+    path('.well-known/ai-plugin.json', lambda request: serve(request, '.well-known/ai-plugin.json', document_root=settings.BASE_DIR / 'static/.well-known')),
+
     path('admin/', admin.site.urls),
     path('mcp.json', views.mcp_manifest),
     path('check_token/', views.check_token),

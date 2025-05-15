@@ -1,0 +1,378 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+      "title": "Web3 Trust Guard MCP Server",
+      "version": "1.0.0",
+      "description": "An MCP server providing Web3 security tools for tokens, wallets, NFTs, URLs, Solana transactions, and donation verification."
+    },
+    "servers": [
+      { "url": "https://mcp.fundmesolana.com" }
+    ],
+    "paths": {
+      "/check_token/": {
+        "post": {
+          "operationId": "check_token",
+          "description": "Scan an EVM token contract for scam indicators.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": { "type": "string" },
+                    "chain_id": { "type": "integer" }
+                  },
+                  "required": ["address", "chain_id"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Token analysis result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "address": { "type": "string" },
+                          "scam_risk": { "type": "string" },
+                          "blacklisted": { "type": "string" },
+                          "creator_address": { "type": "string" },
+                          "buy_tax": { "type": "string" },
+                          "sell_tax": { "type": "string" },
+                          "holder_count": { "type": "string" },
+                          "top_holders": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "address": { "type": "string" },
+                                "tag": { "type": "string" },
+                                "is_contract": { "type": "integer" },
+                                "balance": { "type": "string" },
+                                "percent": { "type": "string" },
+                                "is_locked": { "type": "integer" }
+                              }
+                            }
+                          },
+                          "warning_flags": {
+                            "type": "object",
+                            "properties": {
+                              "honeypot_with_same_creator": { "type": "string" },
+                              "slippage_modifiable": { "type": "string" },
+                              "transfer_pausable": { "type": "string" },
+                              "is_mintable": { "type": "string" },
+                              "owner_address": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/check_wallet/": {
+        "post": {
+          "operationId": "check_wallet",
+          "description": "Check if a wallet address is blacklisted or malicious.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": { "type": "string" },
+                    "chain_id": { "type": "integer" }
+                  },
+                  "required": ["address", "chain_id"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Wallet scan result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "malicious_label": { "type": "string" },
+                          "security_level": { "type": "string" },
+                          "note": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/check_nft/": {
+        "post": {
+          "operationId": "check_nft",
+          "description": "Analyze an NFT for security risks.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "contract": { "type": "string" },
+                    "token_id": { "type": "string" },
+                    "chain_id": { "type": "integer" }
+                  },
+                  "required": ["contract", "token_id", "chain_id"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "NFT analysis result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "security_risk": { "type": "string" },
+                          "verified_contract": { "type": "string" },
+                          "note": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/check_url/": {
+        "post": {
+          "operationId": "check_url",
+          "description": "Check if a URL or dApp is flagged as phishing.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": { "type": "string" }
+                  },
+                  "required": ["url"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "URL check result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "is_phishing": { "type": "boolean" },
+                          "source": { "type": "string" },
+                          "note": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/simulate_sol_tx/": {
+        "post": {
+          "operationId": "simulate_sol_tx",
+          "description": "Simulate a Solana transaction to detect hidden risks.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tx_base64": { "type": "string" }
+                  },
+                  "required": ["tx_base64"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Solana transaction simulation result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "simulated": { "type": "boolean" },
+                          "risk_level": { "type": "string" },
+                          "note": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/check_sol_token/": {
+        "post": {
+          "operationId": "check_sol_token",
+          "description": "Analyze a Solana SPL token for scam indicators.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": { "type": "string" }
+                  },
+                  "required": ["address"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "SPL token risk evaluation",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "scam_risk": { "type": "string" },
+                          "mintable": { "type": "string" },
+                          "transfer_pausable": { "type": "string" },
+                          "owner_address": { "type": "string" },
+                          "note": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/verify_donation/": {
+        "post": {
+          "operationId": "verify_donation",
+          "description": "Check if a transaction is a donation to a verified cause.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tx_hash": { "type": "string" },
+                    "chain": {
+                      "type": "string",
+                      "enum": ["evm", "solana"],
+                      "default": "evm"
+                    },
+                    "chain_id": { "type": "integer" }
+                  },
+                  "required": ["tx_hash"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Donation verification result",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/causes/": {
+        "get": {
+          "operationId": "list_verified_causes",
+          "description": "List all verified donation recipients.",
+          "responses": {
+            "200": {
+              "description": "List of verified causes",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": { "type": "boolean" },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "causes": { "type": "array", "items": { "type": "object" } },
+                          "failed_sources": { "type": "array", "items": { "type": "object" } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

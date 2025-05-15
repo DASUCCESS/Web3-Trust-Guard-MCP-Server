@@ -141,12 +141,28 @@ def check_token(request):
         params={"contract_addresses": serializer.validated_data['address']}
     )
     if isinstance(data, dict) and data.get("error"):
-        return error_response(data.get("message"), data.get("code"), data.get("raw"))
+        return error_response(data.get("message"), data.get("code"), data.get("raw"))  
+
+    token_info = list(data.values())[0] if isinstance(data, dict) and len(data) else {}
+
     return success_response({
         "address": serializer.validated_data['address'],
-        "scam_risk": data.get("is_honeypot", "0"),
-        "raw": data
+        "scam_risk": token_info.get("is_honeypot", "0"),
+        "blacklisted": token_info.get("is_blacklisted", "0"),
+        "creator_address": token_info.get("creator_address"),
+        "buy_tax": token_info.get("buy_tax"),
+        "sell_tax": token_info.get("sell_tax"),
+        "holder_count": token_info.get("holder_count"),
+        "top_holders": token_info.get("holders", [])[:3],  # Optional: limit to 3
+        "warning_flags": {
+            "honeypot_with_same_creator": token_info.get("honeypot_with_same_creator"),
+            "slippage_modifiable": token_info.get("slippage_modifiable"),
+            "transfer_pausable": token_info.get("transfer_pausable"),
+            "is_mintable": token_info.get("is_mintable"),
+            "owner_address": token_info.get("owner_address")
+        }
     })
+
 
 
 @swagger_auto_schema(method='post', request_body=CheckWalletSerializer)
@@ -160,10 +176,11 @@ def check_wallet(request):
     )
     if isinstance(data, dict) and data.get("error"):
         return error_response(data.get("message"), data.get("code"), data.get("raw"))
+    
     return success_response({
-        "malicious_label": data.get("malicious_label"),
-        "security_level": data.get("security_level"),
-        "raw": data
+        "malicious_label": data.get("malicious_label", "unknown"),
+        "security_level": data.get("security_level", "unknown"),
+        "note": "If malicious_label is not null, this wallet may be suspicious."
     })
 
 
@@ -181,10 +198,15 @@ def check_nft(request):
     )
     if isinstance(data, dict) and data.get("error"):
         return error_response(data.get("message"), data.get("code"), data.get("raw"))
+    
     return success_response({
-        "authenticity_risk": data.get("security_risk"),
-        "raw": data
+        "security_risk": data.get("security_risk", "unknown"),
+        "verified_contract": data.get("contract_address"),
+        "note": "This NFT was analyzed for known risks. Review before minting or buying."
     })
+
+
+
 
 
 @swagger_auto_schema(method='post', request_body=CheckURLSerializer)
@@ -194,33 +216,55 @@ def check_url(request):
     serializer.is_valid(raise_exception=True)
     url = serializer.validated_data['url']
 
-    # Primary check via GoPlus
+    # Step 1: Try GoPlus
     data = fetch_goplus("/api/v1/phishing_site/", params={"url": url})
+
+    # If GoPlus call fails completely
     if isinstance(data, dict) and data.get("error"):
-        return error_response(data.get("message"), data.get("code"), data.get("raw"))
+        response_data = {
+            "is_phishing": False,
+            "source": "goplus-failure",
+            "note": "GoPlus failed to scan the URL. Please retry later or use an alternate service."
+        }
+        return success_response(response_data)
 
-    # If GoPlus returns no "phishing", it will fallback to Google + feeds
+    # If GoPlus says not phishing, check Google Safe Browsing
     if not data.get("phishing"):
-        # This will try Google Safe Browsing
         google_result = fetch_google_safe_browsing(url)
-        if google_result.get("phishing") == 1:
-            return success_response({
-                "is_phishing": 1,
-                "raw": google_result
-            })
 
-        # This will try 3rd-party feeds
+        if isinstance(google_result, dict) and google_result.get("phishing") == 1:
+            response_data = {
+                "is_phishing": True,
+                "source": "google",
+                "note": "Flagged as phishing by Google Safe Browsing"
+            }
+            return success_response(response_data)
+
+        if google_result.get("error"):
+            response_data = {
+                "is_phishing": False,
+                "source": "google-fallback-failed",
+                "note": "Google Safe Browsing scan failed. Scan may be incomplete."
+            }
+            return success_response(response_data)
+
+        # Final fallback: use phishing feeds
         feed_result = check_against_feeds(url)
         if feed_result.get("phishing") == 1:
-            return success_response({
-                "is_phishing": 1,
-                "raw": feed_result
-            })
+            response_data = {
+                "is_phishing": True,
+                "source": feed_result.get("source", "community-feeds"),
+                "note": "Flagged by phishing feed data (OpenPhish, URLhaus, or PhishTank)."
+            }
+            return success_response(response_data)
 
-    return success_response({
-        "is_phishing": data.get("phishing", 0),
-        "raw": data
-    })
+    # Default response from GoPlus
+    response_data = {
+        "is_phishing": bool(data.get("phishing", 0)),
+        "source": data.get("source", "goplus"),
+        "note": "Result provided by GoPlus security engine."
+    }
+    return success_response(response_data)
 
 
 @swagger_auto_schema(method='post', request_body=SimulateSolTxSerializer)
@@ -233,9 +277,11 @@ def simulate_sol_tx(request):
         return error_response(data.get("message"), data.get("code"), data.get("raw"))
     return success_response({
         "simulated": True,
-        "risk_detected": data.get("risk_level", "low"),
-        "raw": data
+        "risk_level": data.get("risk_level", "low"),
+        "note": "This transaction was simulated to detect hidden behavior."
     })
+
+
 
 
 @swagger_auto_schema(method='post', request_body=CheckSolTokenSerializer)
@@ -248,8 +294,12 @@ def check_sol_token(request):
         return error_response(data.get("message"), data.get("code"), data.get("raw"))
     return success_response({
         "scam_risk": data.get("is_honeypot", "0"),
-        "raw": data
+        "mintable": data.get("is_mintable", "0"),
+        "transfer_pausable": data.get("transfer_pausable", "0"),
+        "owner_address": data.get("owner_address", "unknown"),
+        "note": "This SPL token was scanned for honeypot and control flags."
     })
+
 
 
 @swagger_auto_schema(method='post', request_body=VerifyDonationSerializer)
@@ -265,7 +315,7 @@ def verify_donation(request):
     chain = serializer.validated_data.get("chain", "evm")
 
     if not causes and result["failed_sources"]:
-        return error_response("All cause sources failed", raw=result["failed_sources"], status=503)
+        return error_response("All cause sources failed", raw=result["failed_sources"]) 
 
     if chain == "solana":
         tx = fetch_solana_tx(tx_hash)
@@ -286,6 +336,7 @@ def verify_donation(request):
     tx = fetch_covalent_tx(tx_hash, chain_id)
     if tx.get("error"):
         return error_response(tx.get("message", "Unable to retrieve transaction."), raw=tx)
+
     to_address = tx.get("to_address", "").lower()
     match = next((c for c in causes if c['chain'] == "evm" and c.get("chain_id") == chain_id and c['address'].lower() == to_address), None)
     return success_response({

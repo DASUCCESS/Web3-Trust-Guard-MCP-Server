@@ -1,0 +1,18 @@
+{
+    "schema_version": "v1",
+    "name_for_model": "web3_trust_guard_mcp_server",
+    "name_for_human": "Web3 Trust Guard MCP Server",
+    "description_for_model": "Use this tool to scan EVM/Solana tokens, NFTs, wallets, URLs, and verify donations.",
+    "description_for_human": "Scan tokens, URLs, wallets, NFTs or verify donations across chains.",
+    "auth": {
+      "type": "none"
+    },
+    "api": {
+      "type": "openapi",
+      "url": "https://mcp.fundmesolana.com/openapi.json",
+      "is_user_authenticated": false
+    },
+    "contact_email": "support@fundmesolana.com",
+    "legal_info_url": "https://fundmesolana.com/legal"
+  }
+  

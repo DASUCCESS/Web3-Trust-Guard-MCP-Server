@@ -21,13 +21,15 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'drf_yasg',
-
+    'corsheaders',
+    
     # Local
     'core',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -73,13 +75,25 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+
+CORS_ALLOW_ALL_ORIGINS = True  
+CSRF_TRUSTED_ORIGINS = ['https://chat.openai.com', 'https://mcp.fundmesolana.com']
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATIC_URL = 'staticfiles/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+
 
 # .env variables
 GOPLUS_BASE = os.getenv("GOPLUS_BASE")
