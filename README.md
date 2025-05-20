@@ -337,6 +337,45 @@ http://127.0.0.1:8000/swagger/
 ```
 
 ---
+## How to run the Web3 Trust Guard GUI Locally
+
+I provided a GUI that supports tool selection, payload generation, Groq integration, and real-time output.
+
+### Requirements
+
+### Create your API Key here on GROQ CLOUD
+
+* [https://console.groq.com/keys](https://console.groq.com/keys)
+
+
+```bash
+pip install -r requirements.txt
+```
+
+Create `.env`:
+```env
+MCP_URL=https://mcp.fundmesolana.com/mcp.json
+API_BASE=https://mcp.fundmesolana.com
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=mixtral-8x7b-32768
+```
+
+### Run the GUI
+```bash
+python web3trustguard.py
+```
+
+---
+
+## If you don't Want to Run from Source?
+
+You can download and install the app using our ready-made installer from the repo:
+
+[Web3TrustGuardInstaller.exe](./Web3TrustGuardInstaller.exe)
+
+This will install the GUI directly to your computer with a shortcut.
+
+---
 
 ## References & Protocol Sources
 
@@ -356,6 +395,7 @@ http://127.0.0.1:8000/swagger/
 * [URLHaus Malware Feed](https://urlhaus.abuse.ch/downloads/text/)  
 * [PhishTank XML Feed](http://data.phishtank.com/data/online-valid.xml)  
 * [FundMeSolana Verified Causes JSON](https://fundmesolana.com/api/emergency/verified_causes)  
+* [https://console.groq.com/keys](https://console.groq.com/keys)
 ---
 
 ## Built With ❤️ by Bolaji M.L

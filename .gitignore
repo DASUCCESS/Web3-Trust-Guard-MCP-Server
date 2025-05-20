@@ -15,14 +15,29 @@ media/
 staticfiles/
 static_root/
 
-
 # Environment
 .env
 .env.*
 
-# Virtualenv
+# Virtualenvs
 venv/
 ENV/
 env/
 .venv/
 
+# PyInstaller build artifacts (keep .exe, ignore build folders)
+build/
+dist/
+*.spec
+
+# Keep only this one manually exported .exe
+!Web3TrustGuardInstaller.exe
+
+# Inno Setup temp files
+*.iss~
+Output/
+
+# macOS and Windows junk
+.DS_Store
+Thumbs.db
+desktop.ini
