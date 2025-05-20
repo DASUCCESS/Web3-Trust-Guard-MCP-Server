@@ -371,7 +371,7 @@ python web3trustguard.py
 
 You can download and install the app using our ready-made installer from the repo:
 
-[Web3TrustGuardInstaller.exe](./Web3TrustGuardInstaller.exe)
+[Web3TrustGuardInstaller.exe](./Output/Web3TrustGuardInstaller.exe)
 
 This will install the GUI directly to your computer with a shortcut.
 
