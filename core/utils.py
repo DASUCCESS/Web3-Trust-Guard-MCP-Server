@@ -167,12 +167,19 @@ def get_verified_causes():
         try:
             res = requests.get(url.strip(), timeout=5)
             if res.status_code == 200:
-                causes.extend(res.json())
+                json_data = res.json()
+                if isinstance(json_data, dict) and "results" in json_data:
+                    causes.extend(json_data["results"])
+                elif isinstance(json_data, list):
+                    causes.extend(json_data)
+                else:
+                    failures.append({"source": url, "error": "Unexpected response format"})
             else:
                 failures.append({"source": url, "error": f"HTTP {res.status_code}"})
         except Exception as e:
             failures.append({"source": url, "error": str(e)})
     return {"verified_causes": causes, "failed_sources": failures}
+
 
 
 

@@ -371,7 +371,7 @@ python web3trustguard.py
 
 You can download and install the app using our ready-made installer from the repo:
 
-[Web3TrustGuardInstaller.exe](./Web3TrustGuardInstaller.exe)
+[Web3TrustGuardInstaller.exe](./Output/Web3TrustGuardInstaller.exe)
 
 This will install the GUI directly to your computer with a shortcut.
 
@@ -403,7 +403,7 @@ This will install the GUI directly to your computer with a shortcut.
 Building public-good AI agents that trust on-chain data.
 
 Follow: [@DeMCP\_AI](https://twitter.com/DeMCP_AI),
-[@Fundmesolaa](https://twitter.com/Fundmesolana)
+[@Fundmesolana](https://twitter.com/Fundmesolana)
 
 Website: [https://demcp.ai](https://demcp.ai),
 [https://fundmesolana.com](https://fundmesolana)
