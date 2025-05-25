@@ -115,11 +115,6 @@ def fetch_goplus(endpoint: str, params=None, method="GET", body=None):
             json_data = res.json()
             result = json_data.get("result")
 
-            # If phishing check and GoPlus gives nothing, fallback to Google
-            if endpoint == "/api/v1/phishing_site/" and (not result or "phishing" not in result):
-                fallback = fetch_google_safe_browsing(params.get("url"))
-                return fallback if fallback else {"error": True, "message": "Fallback failed", "raw": None}
-
             if not result:
                 return {
                     "error": True,
@@ -127,6 +122,7 @@ def fetch_goplus(endpoint: str, params=None, method="GET", body=None):
                     "code": json_data.get("code"),
                     "raw": json_data
                 }
+
             return result
         return {
             "error": True,
@@ -139,6 +135,7 @@ def fetch_goplus(endpoint: str, params=None, method="GET", body=None):
             "message": "Unable to process request at the moment.",
             "details": str(e)
         }
+
 
 
 def fetch_covalent_tx(tx_hash, chain_id):

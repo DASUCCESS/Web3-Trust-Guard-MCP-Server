@@ -206,9 +206,6 @@ def check_nft(request):
     })
 
 
-
-
-
 @swagger_auto_schema(method='post', request_body=CheckURLSerializer)
 @api_view(['POST'])
 def check_url(request):
@@ -216,55 +213,55 @@ def check_url(request):
     serializer.is_valid(raise_exception=True)
     url = serializer.validated_data['url']
 
-    # Step 1: Try GoPlus
-    data = fetch_goplus("/api/v1/phishing_site/", params={"url": url})
+    # Step 1: This will try GoPlus first
+    goplus_result = fetch_goplus("/api/v1/phishing_site/", params={"url": url})
 
-    # If GoPlus call fails completely
-    if isinstance(data, dict) and data.get("error"):
-        response_data = {
+    if isinstance(goplus_result, dict) and goplus_result.get("error"):
+        return success_response({
             "is_phishing": False,
             "source": "goplus-failure",
             "note": "GoPlus failed to scan the URL. Please retry later or use an alternate service."
-        }
-        return success_response(response_data)
+        })
 
-    # If GoPlus says not phishing, check Google Safe Browsing
-    if not data.get("phishing"):
-        google_result = fetch_google_safe_browsing(url)
+    # If GoPlus says phishing = 1 that means its flagged
+    if goplus_result.get("phishing") == 1:
+        return success_response({
+            "is_phishing": True,
+            "source": "goplus",
+            "note": "Flagged by GoPlus security engine."
+        })
 
-        if isinstance(google_result, dict) and google_result.get("phishing") == 1:
-            response_data = {
-                "is_phishing": True,
-                "source": "google",
-                "note": "Flagged as phishing by Google Safe Browsing"
-            }
-            return success_response(response_data)
+    # Step 2: This will fall back to this and try Google Safe Browsing even goplus cannot detect it
+    google_result = fetch_google_safe_browsing(url)
+    if google_result.get("phishing") == 1:
+        return success_response({
+            "is_phishing": True,
+            "source": "google",
+            "note": "Flagged as phishing by Google Safe Browsing"
+        })
 
-        if google_result.get("error"):
-            response_data = {
-                "is_phishing": False,
-                "source": "google-fallback-failed",
-                "note": "Google Safe Browsing scan failed. Scan may be incomplete."
-            }
-            return success_response(response_data)
+    if google_result.get("error"):
+        return success_response({
+            "is_phishing": False,
+            "source": "google-fallback-failed",
+            "note": "Google Safe Browsing scan failed. Scan may be incomplete."
+        })
 
-        # Final fallback: use phishing feeds
-        feed_result = check_against_feeds(url)
-        if feed_result.get("phishing") == 1:
-            response_data = {
-                "is_phishing": True,
-                "source": feed_result.get("source", "community-feeds"),
-                "note": "Flagged by phishing feed data (OpenPhish, URLhaus, or PhishTank)."
-            }
-            return success_response(response_data)
+    # Step 3: Fall back to Community Feeds if both above could not locate it
+    feed_result = check_against_feeds(url)
+    if feed_result.get("phishing") == 1:
+        return success_response({
+            "is_phishing": True,
+            "source": feed_result.get("source", "community-feeds"),
+            "note": "Flagged by phishing feed data (OpenPhish, URLhaus, or PhishTank)."
+        })
 
-    # Default response from GoPlus
-    response_data = {
-        "is_phishing": bool(data.get("phishing", 0)),
-        "source": data.get("source", "goplus"),
-        "note": "Result provided by GoPlus security engine."
-    }
-    return success_response(response_data)
+    # If none of the above worked, return clean website note to user
+    return success_response({
+        "is_phishing": False,
+        "source": "none-detected",
+        "note": "No phishing flags from GoPlus, Google, or feeds."
+    })
 
 
 @swagger_auto_schema(method='post', request_body=SimulateSolTxSerializer)

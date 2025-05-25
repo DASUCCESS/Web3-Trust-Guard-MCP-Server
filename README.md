@@ -126,106 +126,113 @@ POST /check_token/
 
 * Includes approval & threat indicators
 
+Perfect — here is your updated **Section 4: `check_url`** for your `README.md`, now enhanced with the new logic and **test examples**, ready for copy-paste:
+
+---
+
+Absolutely — here's the final, updated version of **Section 4: `check_url`** for your `README.md`, with everything included:
+
+* Your **latest detection logic**
+* **Live phishing test examples**
+* Clear warning that detection status may change
+* Links to **real-time threat feed repos**, including the OpenPhish GitHub URL you provided
+
+---
+
 ### 4. `check_url`
-The `check_url` endpoint uses a **multi-layered detection strategy** to determine if a website is malicious:
 
-- **GoPlus API** (blockchain-aware threat intelligence)
-- **Google Safe Browsing API v4**
-- Fallback to **community feeds**:
-  - [OpenPhish](https://openphish.com/feed.txt)
-  - [URLHaus](https://urlhaus.abuse.ch/downloads/text/)
-  - [PhishTank](http://data.phishtank.com/data/online-valid.xml)
+The `check_url` endpoint uses a **multi-layered phishing detection strategy** to analyze whether a website or dApp is flagged as malicious. It checks across several real-time threat intelligence systems, and the result includes:
 
-This layered approach increases reliability when Chrome or browsers detect threats not yet indexed by APIs.
+* `is_phishing`: whether the URL is dangerous
+* `source`: the system that flagged it (e.g., `google`, `openphish`, etc.)
+* `note`: human-readable explanation
+
+#### Detection Sources
+
+| Source               | Type                                | Real-Time Feed Link                                                                            |
+| -------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| GoPlus API           | Blockchain-focused security checks  | [GoPlus Labs](https://docs.gopluslabs.io/)                                                     |
+| Google Safe Browsing | Web phishing & malware detection    | [API Docs](https://developers.google.com/safe-browsing/v4)                                     |
+| OpenPhish            | Real-time phishing URL feed         | [`feed.txt`](https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt) |
+| URLHaus              | Malware & malicious domains         | [`text`](https://urlhaus.abuse.ch/downloads/text/)                                             |
+| PhishTank            | Community-powered phishing database | [`XML`](http://data.phishtank.com/data/online-valid.xml)                                       |
+
+> This **layered detection strategy** ensures reliability. If one system misses a phishing URL, others might catch it.
+
+---
+
+#### Example Request
 
 ```json
-{ "url": "https://mintyspark.vercel.app/managermentquan/vJ4q7Zb8P1.html" }
+{ "url": "http://live-chat-binance.com/" }
 ```
-```json
-{
-  "url": "https://noblepci.com/innovation"
-}
-```
 
+---
 
+#### Example Responses
 
-### Real Threat Detection Examples 
-
-#### Example 1: Detected by **Google Safe Browsing**
-
-```json
-{
-  "url": "https://noblepci.com/innovation"
-}
-````
-
-**Response:**
+**Case 1: Flagged by Google Safe Browsing**
 
 ```json
 {
   "success": true,
   "data": {
-    "is_phishing": 1,
-    "raw": {
-      "source": "google",
-      "phishing": 1,
-      "raw": {
-        "matches": [
-          {
-            "threatType": "SOCIAL_ENGINEERING",
-            "platformType": "ANY_PLATFORM",
-            "threat": {
-              "url": "https://noblepci.com/innovation"
-            },
-            "cacheDuration": "300s",
-            "threatEntryType": "URL"
-          }
-        ]
-      }
-    }
+    "is_phishing": true,
+    "source": "google",
+    "note": "Flagged as phishing by Google Safe Browsing"
+  }
+}
+```
+
+**Case 2: Flagged by Community Feeds**
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_phishing": true,
+    "source": "openphish",
+    "note": "Flagged by phishing feed data (OpenPhish, URLhaus, or PhishTank)."
+  }
+}
+```
+
+**Case 3: Clean URL (No source flagged it)**
+
+```json
+{
+  "success": true,
+  "data": {
+    "is_phishing": false,
+    "source": "none-detected",
+    "note": "No phishing flags from GoPlus, Google, or feeds."
   }
 }
 ```
 
 ---
 
-#### Example 2: Detected by **OpenPhish**
+#### URLs You Can Use for Testing
 
-```json
-{
-  "url": "https://mintyspark.vercel.app/managermentquan/vJ4q7Zb8P1.html"
-}
-```
+| URL                                                   | Likely Result                     |
+| ----------------------------------------------------- | --------------------------------- |
+| `http://live-chat-binance.com/`                       | Flagged by OpenPhish     |
+| `http://testsafebrowsing.appspot.com/s/phishing.html` | Flagged by Google Safe Browsing |
+| `https://fundmesolana.com`                            | Clean (expected `false`)        |
 
-**Response:**
+---
 
-```json
-{
-  "success": true,
-  "data": {
-    "is_phishing": 1,
-    "raw": {
-      "source": "openphish",
-      "phishing": 1
-    }
-  }
-}
-```
+#### Important Note
 
-### 5. `simulate_sol_tx`
+> The **status of phishing URLs can change over time**.
+> If a phishing site is removed, cleaned, or re-hosted, it may **no longer appear in threat feeds**, and `check_url` will return `is_phishing: false`.
 
-```json
-{ "tx_base64": "<your_encoded_transaction>" }
-```
+To manually verify if a domain is currently listed, you can check:
 
-### 6. `verify_donation`
+* [OpenPhish Feed](https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt)
+* [URLHaus Text Feed](https://urlhaus.abuse.ch/downloads/text/)
+* [PhishTank XML Feed](http://data.phishtank.com/data/online-valid.xml)
 
-```json
-{
-  "tx_hash": "<tx_hash>",
-  "chain": "solana"
-}
-```
 
 ---
 
